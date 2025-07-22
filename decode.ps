@@ -1,0 +1,29 @@
+# Output folder (Desktop)
+$outputFolder = [Environment]::GetFolderPath("Desktop")
+
+# Hive files jo base64 encoded hain
+$encodedFiles = @{
+    "SAM"      = "SAM_dump_base64.txt"
+    "SYSTEM"   = "SYSTEM_dump_base64.txt"
+    "SECURITY" = "SECURITY_dump_base64.txt"
+}
+
+foreach ($hive in $encodedFiles.Keys) {
+    $encodedPath = Join-Path $outputFolder $encodedFiles[$hive]
+    $decodedPath = Join-Path $outputFolder "$hive`_decoded_dump"
+
+    if (Test-Path $encodedPath) {
+        Write-Output "Decoding $encodedPath to $decodedPath ..."
+        
+        # Read base64 content
+        $base64 = Get-Content $encodedPath -Raw
+        
+        # Decode base64 and write bytes to file
+        [IO.File]::WriteAllBytes($decodedPath, [Convert]::FromBase64String($base64))
+    }
+    else {
+        Write-Warning "File $encodedPath not found!"
+    }
+}
+
+Write-Output "Decoding completed."
